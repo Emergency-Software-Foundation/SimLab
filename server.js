@@ -5,6 +5,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import {checkSession} from "./sessionmanager.js";import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import favicon from 'serve-favicon';
 
 //polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -35,48 +36,85 @@ io.engine.use(sessionMiddleware);
 
 web.set('view engine', 'ejs');
 web.set('views', __dirname + '/views');
+web.use(favicon(__dirname + '/static/favicon.ico'));
 web.use(express.static(__dirname + '/static'));
+web.use(detectClientType);
+
+web.get('/', (req, res, next) => {
+  if (!req.session.user) {
+    res.render('join');
+    return;
+  }
+  //handle the sim itself here
+  next();
+});
 
 web.get('/joinsession', (req, res) => {
   if (!Object.hasOwn(req.query, 'sid')) {
-		res.status(400).json({
-			"error": 400,
-			"message": "Missing simulation id from request."
-		});
+		if (req.clientType === 'api') {
+      res.status(400).json({
+        "error": 400,
+        "message": "Missing simulation id from request."
+      });
+    } else {
+      res.redirect("/");
+    }
 	} else if (checkSession(req.query.sid)) {
     req.session.user = {id: randomUUID(), sid: req.query.sid};
-    res.json(req.session);
-    res.status(200).json({
-			"message": "Joined session."
-		});
+    if (req.clientType === 'api') {
+      res.status(200).json({
+        "message": "Joined session."
+      });
+    } else {
+      res.redirect("/");
+    }
   } else {
-    res.status(404).json({
-			"error": 404,
-			"message": "Simulation session not found."
-		});
+    if (req.clientType === 'api') {
+      res.status(404).json({
+        "error": 404,
+        "message": "Simulation session not found."
+      });
+    } else {
+      //TODO: we should find a way to pass the not found message to the front page
+      res.redirect("/");
+    }
   }
 });
 
 web.get('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) console.error(err);
-    res.send('Logged out');
+    if (req.clientType === 'api') {
+      res.json({
+        "message": 'Logged out successfully'
+      });
+    } else {
+      res.redirect("/");
+    }
   });
 });
 
 //Error handling
 web.use((req, res, next) => {
-	res.status(404).json({
-		"error": 404,
-		"message": "That endpoint does not exist."
-	});
+  if (req.clientType === 'api') {
+    res.status(404).json({
+      "error": 404,
+      "message": "That endpoint does not exist."
+    });
+  } else {
+    res.status(404).render('notfound');
+  }
 });
 web.use((err, req, res, next) => {
 	console.error(err.stack);
-	res.status(500).json({
-		"error": 500,
-		"message": "A server error has occured."
-	});
+	if (req.clientType === 'api') {
+    res.status(500).json({
+      "error": 500,
+      "message": "An internal server error has occured."
+    });
+  } else {
+    res.status(500).render('error');
+  }
 });
 
 // Socket.IO connection handling
@@ -107,4 +145,16 @@ function isReady() {
         console.log('SERVER > Application Ready.')
         console.log(art);
     }
+}
+
+function detectClientType(req, res, next) {
+    // Check Accept header
+    if (req.accepts('json') && !req.accepts('html')) {
+        req.clientType = 'api';
+    } else if (req.xhr || req.get('X-Requested-With') === 'XMLHttpRequest') {
+        req.clientType = 'api';
+    } else {
+        req.clientType = 'web';
+    }
+    next();
 }
