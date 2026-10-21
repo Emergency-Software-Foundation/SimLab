@@ -1,0 +1,11 @@
+<VirtualHost simlab.emergencysoftware.org:80>
+    ServerName simlab.emergencysoftware.org
+    
+	ProxyPass /error/ !
+    
+    ProxyPass / http://localhost:8081/ timeout=15
+    ProxyPassReverse / http://localhost:8081/
+	
+	Alias /error/ /var/www/http/simlab
+	ErrorDocument 503 /error/error.html
+</VirtualHost>
