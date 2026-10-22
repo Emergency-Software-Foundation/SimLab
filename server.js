@@ -42,11 +42,10 @@ web.use(detectClientType);
 
 web.get('/', (req, res, next) => {
   if (!req.session.user) {
-    res.render('join');
+    res.render('pagewrapper', {content:'join.ejs', contentData: {pageTitle: "Join a Simulation"}});
     return;
   }
-  //handle the sim itself here
-  next();
+  res.render('simwrapper', {content:'tbd', contentData: {pageTitle: "Sim Name Goes Here", simName: "See Previous", session: req.session}});
 });
 
 web.get('/joinsession', (req, res) => {
@@ -102,7 +101,7 @@ web.use((req, res, next) => {
       "message": "That endpoint does not exist."
     });
   } else {
-    res.status(404).render('notfound');
+    res.status(404).render('pagewrapper', {content:'notfound.ejs', contentData: {pageTitle: "Page not found", session: req.session}});
   }
 });
 web.use((err, req, res, next) => {

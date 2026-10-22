@@ -1,0 +1,53 @@
+<!-- TODO: Most of this template is still placeholder from the mockup -->
+<%- include('header.ejs', contentData) %>
+  <div class="sim-layout">
+    <aside class="sim-sidebar">
+      <nav aria-label="Simulation navigation">
+        <a class="sim-nav-item active" href="#overview">
+          Overview
+        </a>
+        <a class="sim-nav-item" href="#decisions">
+          Decisions
+        </a>
+        <a class="sim-nav-item" href="#reports">
+          Reports
+        </a>
+        <a class="sim-nav-item" href="#messages">
+          Messages
+        </a>
+      </nav>
+    </aside>
+
+    <div class="sim-content">
+      <div class="sim-page-header">
+        <div>
+          <div class="eyebrow">Marketing Strategy Simulation</div>
+          <h1 class="page-heading">
+            Q3 Marketing Strategy
+          </h1>
+          <p class="muted">
+            Marketing 101 · Team 3 · Round 1
+          </p>
+        </div>
+        <span class="badge">In progress</span>
+      </div>
+
+      <!-- Replace this section for each simulation -->
+      <main id="simulation-workspace">
+        <section class="card">
+          <div class="card-body">
+            <h2 class="section-title">
+              Simulation workspace
+            </h2>
+            <p>
+              The active simulation renders its interface here.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="sim-footer">
+        <%- include('footercontent.ejs') %>
+      </footer>
+    </div>
+  </div>
