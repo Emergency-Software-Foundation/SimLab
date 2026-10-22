@@ -3,9 +3,10 @@ import express from 'express';
 import session from 'express-session';
 import http from 'http';
 import { Server } from 'socket.io';
-import {checkSession} from "./sessionmanager.js";import { fileURLToPath } from 'url';
+import {checkSession, getSimulationBySID, getSimulationNameBySID} from "./simsessionmanager.js";import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import favicon from 'serve-favicon';
+import fs from 'fs';
 
 //polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +19,8 @@ const SocketPort = 8082;
 const io = new Server(server, { cors: { origin: "*" } });
 
 let art = `
-			      (c) 2026 Toby McDonald
+                        :: eSimLab ::
+	  (c) ${(new Date().getFullYear())} Emergency Software Foundation
 `;
 
 const sessionMiddleware = session({
@@ -45,7 +47,19 @@ web.get('/', (req, res, next) => {
     res.render('pagewrapper', {content:'join.ejs', contentData: {pageTitle: "Join a Simulation"}});
     return;
   }
-  res.render('simwrapper', {content:'tbd', contentData: {pageTitle: "Sim Name Goes Here", simName: "See Previous", session: req.session}});
+  let simulation = getSimulationBySID(req.session?.user?.sid??"")??{};
+  console.log(simulation);
+  let contentData = {
+    session: req.session,
+    simulation: simulation,
+    pageTitle: getSimulationNameBySID(req.session.user.sid),
+    simTitle: getSimulationNameBySID(req.session.user.sid),
+    simTemplate: simulation.getSimulationTemplate(req.session.user.id)
+  };
+  if (!fs.existsSync(__dirname + '/views/' + contentData.simTemplate)) {
+    contentData.simTemplate = "errorcard.ejs";
+  }
+  res.render('simwrapper', {content:'tbd', contentData});
 });
 
 web.get('/joinsession', (req, res) => {
@@ -101,7 +115,14 @@ web.use((req, res, next) => {
       "message": "That endpoint does not exist."
     });
   } else {
-    res.status(404).render('pagewrapper', {content:'notfound.ejs', contentData: {pageTitle: "Page not found", session: req.session}});
+    res.status(404).render('pagewrapper', {
+      content:'notfound.ejs',
+      contentData: {
+        pageTitle: "Page not found",
+        session: req.session,
+        simTitle: getSimulationNameBySID(req.session.user.sid??"")
+      }
+    });
   }
 });
 web.use((err, req, res, next) => {
