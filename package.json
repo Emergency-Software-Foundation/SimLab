@@ -1,9 +1,9 @@
 {
-  "name": "operationssupplychainsim",
+  "name": "eSimLab",
   "version": "1.0.0",
   "description": "",
   "license": "MIT",
-  "author": "Toby McDonald",
+  "author": "Emergnecy Software Foundation/Toby McDonald",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -13,6 +13,7 @@
     "ejs": "^7.0.2",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
+    "qrcode": "^1.5.4",
     "serve-favicon": "^2.5.1",
     "socket.io": "^4.8.4"
   }

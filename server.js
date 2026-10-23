@@ -3,10 +3,11 @@ import express from 'express';
 import session from 'express-session';
 import http from 'http';
 import { Server } from 'socket.io';
-import {checkSession, getSimulationBySID, getSimulationNameBySID} from "./simsessionmanager.js";import { fileURLToPath } from 'url';
+import {checkSession, getAvailableSimulations, getSimulationBySID, getSimulationNameBySID, createSession} from "./simsessionmanager.js";import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import favicon from 'serve-favicon';
 import fs from 'fs';
+import QRCode from 'qrcode';
 
 //polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -41,14 +42,15 @@ web.set('views', __dirname + '/views');
 web.use(favicon(__dirname + '/static/favicon.ico'));
 web.use(express.static(__dirname + '/static'));
 web.use(detectClientType);
+web.use(express.json());
 
-web.get('/', (req, res, next) => {
+
+web.get('/', (req, res) => {
   if (!req.session.user) {
     res.render('pagewrapper', {content:'join.ejs', contentData: {pageTitle: "Join a Simulation"}});
     return;
   }
   let simulation = getSimulationBySID(req.session?.user?.sid??"")??{};
-  console.log(simulation);
   let contentData = {
     session: req.session,
     simulation: simulation,
@@ -107,6 +109,50 @@ web.get('/logout', (req, res) => {
   });
 });
 
+web.get('/availablesims', (req, res, next) => {
+  if (req.clientType === 'api') {
+    res.json(getAvailableSimulations());
+  } else {
+    next()
+  }
+});
+
+web.get('/createsim', async (req, res) => {
+  if (!!req.session.user) {
+    const data = 'https://simlab.emergencysoftware.org/joinsession?sid='+req.session.user.sid;
+    const qrDataUrl = await QRCode.toDataURL(data);
+    res.render('pagewrapper', {
+      content:'confirm.ejs',
+      contentData: {
+        pageTitle: "Setup Simulation",
+        session: req.session,
+        simTitle: getSimulationNameBySID(req.session.user?.sid??""),
+        qrImg: qrDataUrl
+      }
+    });
+    return;
+  }
+  res.render('pagewrapper', {
+      content:'create.ejs',
+      contentData: {
+        pageTitle: "Setup Simulation",
+        session: req.session,
+        simTitle: getSimulationNameBySID(req.session.user?.sid??""),
+        availableSims: getAvailableSimulations()
+      }
+    });
+})
+
+web.post('/createsim/:sim', (req, res, next) => {
+  if (req.clientType === 'api') {
+    const newSID = createSession(req.params.sim, req.body);
+    req.session.user = {id: randomUUID(), sid: newSID};
+    res.send(newSID);
+  } else {
+    next();
+  }
+});
+
 //Error handling
 web.use((req, res, next) => {
   if (req.clientType === 'api') {
@@ -120,12 +166,12 @@ web.use((req, res, next) => {
       contentData: {
         pageTitle: "Page not found",
         session: req.session,
-        simTitle: getSimulationNameBySID(req.session.user.sid??"")
+        simTitle: getSimulationNameBySID(req.session.user?.sid??"")
       }
     });
   }
 });
-web.use((err, req, res, next) => {
+web.use((err, req, res) => {
 	console.error(err.stack);
 	if (req.clientType === 'api') {
     res.status(500).json({

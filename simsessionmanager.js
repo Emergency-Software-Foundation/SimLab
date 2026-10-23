@@ -1,9 +1,14 @@
-import session from "express-session";
 import GenericSim from "./sims/genericsim.js";
+import { randomInt } from "node:crypto";
 
-let simsessions = {
-    "ABC123": new GenericSim(),
-};
+let simsessions = {};
+let simulations = {
+    "generic": GenericSim
+}
+
+export function getAvailableSimulations() {
+    return Object.keys(simulations);
+}
 
 export function checkSession(session) {
     session = session.toUpperCase();
@@ -29,6 +34,26 @@ export function getSimulationNameBySID(sid) {
     return "";
 }
 
-function addSession(session) {
-    //sessions.push(session.toUpperCase());
+export function createSession(simulation, constructorData) {
+    let code = generateCode();
+    while (code in simsessions){
+        code = generateCode();
+    }
+    if (simulation in simulations) {
+        try {
+            let session = new simulations[simulation](code, constructorData);
+            simsessions[code] = session;
+            return code;
+        } catch (error) {
+            console.error(error.message);
+            return false;
+        }
+    }
+    return false;
+}
+
+function generateCode(length = 6) {
+    //const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; //Alphanumeric
+    const chars = '0123456789'; //Numeric
+    return Array.from({ length }, () => chars[randomInt(chars.length)]).join('');
 }

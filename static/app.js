@@ -56,6 +56,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  const copyButton = document.querySelector("#copy-code");
+  if (copyButton) {
+    copyButton.addEventListener("click", async () => {
+      const code = document.querySelector("#join-code").textContent;
+      const feedback = document.querySelector("#copy-feedback");
+      try {
+        await navigator.clipboard.writeText(code);
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNodeContents(document.querySelector("#sample-code"));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      feedback.classList.remove("hidden");
+    });
+  }
   const currentYear = new Date().getFullYear();
   document.getElementById('copyright-year').textContent = currentYear;
 });

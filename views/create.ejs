@@ -1,0 +1,30 @@
+<main class="page-main">
+  <div class="container-sm">
+    <a href="/" class="inline-link">← Go Back</a>
+    <div style="margin-top:20px">
+      <div class="eyebrow">Instructor tools</div>
+      <h1 class="page-heading" style="margin-top:8px">Configure a Simulation</h1>
+    </div>
+    <ol class="step-list" style="margin-top:28px"><li class="active">1. Select Simulation</li><li>2. Configure Simulation</li><li>3. Review</li></ol>
+    <section class="card">
+      <div class="card-body">
+        <form id="create-form">
+          <div class="form-group">
+            <label class="form-label" for="simulation-type">Simulation template</label>
+            <select class="form-select" id="simulation-type" required>
+              <option value="" hidden>Choose a template</option>
+              <% availableSims.forEach(function(sim) { %>
+                <option><%= sim %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="row-between">
+            <a class="btn btn-secondary" href="/">Cancel</a>
+            <button class="btn btn-primary" type="submit">Continue</button>
+          </div>
+          <div id="create-error" class="notice notice-error hidden" role="alert" style="margin-top:16px">Please provide a session name and choose a simulation template.</div>
+        </form>
+      </div>
+    </section>
+  </div>
+</main>

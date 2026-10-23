@@ -1,0 +1,17 @@
+<main class="page-main">
+  <div class="container-sm">
+    <div style="margin-top:20px">
+      <div class="eyebrow">Instructor tools</div>
+      <h1 class="page-heading" style="margin-top:8px">Configure a Simulation</h1>
+    </div>
+    <ol class="step-list" style="margin-top:28px"><li>1. Select Simulation</li><li>2. Configure Simulation</li><li class="active">3. Review</li></ol>
+    <section class="card"><div class="card-body">
+      <dl class="kv"><dt>Simulation</dt><dd id="review-template"><%= simTitle %></dd></dl>
+      <img alt="Join Link QR Code" src="<%= qrImg %>"></img>
+      <div class="preview-banner section"><div class="small muted">Session Join Code</div><div class="row-between" style="margin-top:4px"><strong style="font-size:24px;letter-spacing:.06em;color:var(--sl-ink)" id="join-code"><%= session?.user?.sid.split("").join(" "); %></strong><button class="btn btn-secondary btn-sm" id="copy-code" type="button">Copy code</button></div><div class="form-hint">Enter this code at http://SimLab.EmergencySoftware.org/ to join.</div></div>
+      <div id="copy-feedback" class="notice notice-success hidden" role="status" style="margin-top:12px">Sample code copied.</div>
+      <hr class="divider">
+      <div class="row-between"><a class="btn btn-secondary" href="/logout">Restart Setup</a><a class="btn btn-primary" href="/">Done</a></div>
+    </div></section>
+  </div>
+</main>
